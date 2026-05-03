@@ -1,0 +1,133 @@
+# DPD simulation binary (AB) mixture
+# Coding by Dr. Awaneesh Singh
+#***********************************************
+# Defined random seeds & few parameters
+#***********************************************
+variable   rseeddpd  equal  1157
+variable   rseedvel  equal  1167
+variable   rseedssao equal  1177
+variable   rc_dpd    equal  1.0
+variable   gamma     equal  4.5
+#variable   boxl      equal  20
+
+# Simulation time 
+#***********************************************
+variable   equilibsteps  equal  1000
+variable   mainsteps     equal  2000
+
+# Temperature setup: T* = T/T_0; T_0 = (25+273.15) K
+#**********************************************************
+variable   systemTemp    equal  25
+variable   adjustedTemp  equal  (${systemTemp}+273.15)/(25+273.15)
+variable   T_e           equal  3*${adjustedTemp}
+
+# Interaction strength (a_pp = 25T*)(a_jp=10T*)
+#**********************************************************
+variable   a25  equal  25*${adjustedTemp}
+variable   a30  equal  30*${adjustedTemp}
+variable   a10  equal  10*${adjustedTemp}
+variable   a20  equal  20*${adjustedTemp}
+
+# Simulation setup
+#***********************************************
+units           lj
+atom_style      molecular
+boundary        p  p  p
+pair_style      dpd  ${adjustedTemp}  ${rc_dpd}  ${rseeddpd}
+bond_style      harmonic
+angle_style     cosine
+special_bonds   lj 1.0 1.0 1.0
+comm_modify     cutoff 4.0 vel yes
+
+
+# Define Polymer chain from DataFile
+#***********************************************
+read_data   ../polymer_chain_multiple_3_jr1.5_2.data
+
+
+# Define groups for various type of atoms
+#**************************************************
+group          chainA  type   1 
+group          chainB  type   2
+group          chainAB type   1 2
+group          janus   type   3 4
+
+#***********************************************
+variable   N_atoms  equal  count(all)
+variable   tdens equal count(all)/vol
+variable   c_A equal count(chainA)/count(all)
+variable   c_B equal count(chainB)/count(all)
+variable   c_j equal count(janus)/count(all)
+print      "There are ${N_atoms} atoms"
+print      "The system density is now ${tdens}"
+print      "C_A: ${c_A} C_B: ${c_B} C_J: ${c_j}"
+
+# Interaction parameter setting
+#***********************************************
+mass        *  1.0
+pair_coeff  *  *    ${a25*T_e}  ${gamma}  ${rc_dpd}
+pair_coeff  *2  3*  ${a20*T_e}  ${gamma}  ${rc_dpd}
+bond_coeff      1  64.0 0.5 
+angle_coeff     *  4.0 
+
+
+# Velocity for "all" the particles
+#***********************************************
+velocity   all create ${adjustedTemp} ${rseedvel} dist gaussian mom yes
+
+# Integrator control
+#***********************************************
+neighbor      0.3 bin
+neigh_modify  every 1 delay 5 check  no
+timestep      0.02
+
+# Ensemble setting
+#***********************************************
+fix   1  chainAB  nve
+fix   2  janus    rigid/nve molecule reinit no force * on on on torque * off off off
+
+# Thermo output
+#***********************************************
+thermo         100
+thermo_style   custom step temp pe ke etotal epair press
+thermo_modify  flush  yes  norm  no
+
+# Equilibrium run
+#*********************************************
+run  ${equilibsteps}
+
+#*********************************************
+
+# Interaction parameter setting for Quenching
+#***********************************************
+pair_coeff   1  2    ${a30}  ${gamma}  ${rc_dpd}
+
+#repulsion stregth 
+pair_coeff  *3   3*4   ${a30}  ${gamma}  ${rc_dpd}
+
+#affinity interaction setting
+pair_coeff  1   3   ${a10}  ${gamma}  ${rc_dpd}
+pair_coeff  2   4   ${a10}  ${gamma}  ${rc_dpd}
+
+
+# Thermo output after the Equilibration is done
+#***********************************************
+thermo_style   custom step temp pe ke etotal epair press
+thermo_modify  flush yes norm no
+
+dump           1 all xyz 100 dump.xyz
+dump_modify    1 flush yes
+
+dump           2 all  custom 100 dump.*.lammpstrj id mol type x y z vx vy vz
+dump_modify    2 flush yes  
+
+dump           3 all image 100 dump.*.png type type size 720 720 view 70 35 box yes 0.03 shiny 0.6 ssao yes ${rseedssao} 0.3
+dump_modify    3 flush yes adiam 1*2 0.8 acolor 1 red acolor 2 green boxcolor black backcolor white
+
+dump           4 all movie 100 dump.avi type type size 720 720 view 75 35 box yes 0.03 shiny 0.6 ssao yes ${rseedssao} 0.3
+dump_modify    4 flush yes adiam 1*2 0.8 acolor 1 red acolor 2 green boxcolor black backcolor white
+
+# Main run steps
+#***********************************************
+run            ${mainsteps}
+

@@ -1,0 +1,116 @@
+# DPD simulation binary (AB) mixture
+# Coding by Dr. Awaneesh Singh
+#***********************************************
+# Defined random seeds & few parameters
+#***********************************************
+variable   rseeddpd  equal  1157
+variable   rseedvel  equal  1167
+variable   rseedssao equal  1177
+variable   rc_dpd    equal  1.0
+variable   gamma     equal  4.5
+variable   boxl      equal  20
+
+# Simulation time 
+#***********************************************
+variable   equilibsteps  equal  1000
+variable   mainsteps     equal  2000
+
+# Temperature setup: T* = T/T_0; T_0 = (25+273.15) K
+#**********************************************************
+variable   systemTemp    equal  25
+variable   adjustedTemp  equal  (${systemTemp}+273.15)/(25+273.15)
+
+# Interaction strength (a_ss = a_pp = a_ps = 25T*)
+#**********************************************************
+variable   a25  equal  25*${adjustedTemp}
+variable   a60  equal  60*${adjustedTemp}
+
+# Simulation setup
+#***********************************************
+units        lj
+atom_style   molecular
+boundary     p  p  p
+pair_style   dpd  ${adjustedTemp}  ${rc_dpd}  ${rseeddpd}
+lattice      fcc   3.0
+comm_modify  cutoff 4.0 vel yes
+
+# Define region and Simulation box
+#***********************************************
+region       simbox  block  0 ${boxl}  0 ${boxl}  0 ${boxl}  units  box
+create_box   2  simbox
+
+# Define groups for various type of atoms
+#**************************************************
+variable       num1  equal  floor((3*vol)/2)
+create_atoms   1  random   ${num1} 1135  simbox
+group          numA  type   1 
+variable       num2  equal  floor((3*vol)-count(numA))
+create_atoms   2  random   ${num2} 1145  simbox
+group          numB  type   2
+group          numAB type   1 2
+
+#***********************************************
+variable   N_atoms  equal  count(all)
+variable   tdens equal count(all)/vol
+variable   c_A equal count(numA)/count(all)
+variable   c_B equal count(numB)/count(all)
+print      "There are ${N_atoms} atoms"
+print      "The system density is now ${tdens}"
+print      "C_A: ${c_A} C_B: ${c_B}"
+
+# Interaction parameter setting
+#***********************************************
+mass        *  1.0
+pair_coeff  *  *    ${a25}  ${gamma}  ${rc_dpd}
+
+# Velocity for "all" the particles
+#***********************************************
+velocity   all create ${adjustedTemp} ${rseedvel} dist gaussian mom yes
+
+# Integrator control
+#***********************************************
+neighbor      0.3 bin
+neigh_modify  every 1 delay 5 check  no
+timestep      0.02
+
+# Ensemble setting
+#***********************************************
+fix   1  numAB  nve
+
+# Thermo output
+#***********************************************
+thermo         100
+thermo_style   custom step temp pe ke etotal epair press
+thermo_modify  flush  yes  norm  no
+
+# Equilibrium run
+#*********************************************
+run  ${equilibsteps}
+
+#*********************************************
+
+# Interaction parameter setting for Quenching
+#***********************************************
+pair_coeff   1  2    ${a60}  ${gamma}  ${rc_dpd}
+
+# Thermo output after the Equilibration is done
+#***********************************************
+thermo_style   custom step temp pe ke etotal epair press
+thermo_modify  flush yes norm no
+
+dump           1 all xyz 100 dump.xyz
+dump_modify    1 flush yes
+
+dump           2 all  custom 100 dump.*.lammpstrj id mol type x y z vx vy vz
+dump_modify    2 flush yes  
+
+dump           3 all image 100 dump.*.png type type size 720 720 view 70 35 box yes 0.03 shiny 0.6 ssao yes ${rseedssao} 0.3
+dump_modify    3 flush yes adiam 1*2 0.8 acolor 1 red acolor 2 green boxcolor black backcolor white
+
+dump           4 all movie 100 dump.avi type type size 720 720 view 75 35 box yes 0.03 shiny 0.6 ssao yes ${rseedssao} 0.3
+dump_modify    4 flush yes adiam 1*2 0.8 acolor 1 red acolor 2 green boxcolor black backcolor white
+
+# Main run steps
+#***********************************************
+run            ${mainsteps}
+

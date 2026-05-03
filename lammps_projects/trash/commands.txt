@@ -1,0 +1,31 @@
+units
+atom_style
+boundary #gemini
+pair_style
+pair_coeff # ppt mein explain in detail all variables mathematically
+
+bond_style #explain bond and pair diff and mathematically
+bond_coeff
+special_bonds
+lattice
+commm_modify 
+# in our script "Used in simulations requiring high-accuracy 
+# velocity information in neighboring processors, such as certain granular 
+# models or specialized force calculations."
+
+angle_style # we are using cosine style
+angle_coeff #  * k=4
+group
+
+mass
+velocity
+neighbor
+neigh_modify
+timestep
+fix
+thermo
+thermo_style
+thermo_modify
+dump
+dump_modify
+run
