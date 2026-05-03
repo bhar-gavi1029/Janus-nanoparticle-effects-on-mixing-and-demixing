@@ -1,8 +1,8 @@
 import numpy as np
-def write_polymer_data(filename, num_bead,per_chain=20, bond_length=0.3,jr=1.5):
+def write_polymer_data(filename, num_bead,per_chain=20, bond_length=0.3,jr=1):
     
 
-    def calculate_n_for_radius(radius, density_factor=3):
+    def calculate_n_for_radius(radius, density_factor=10):
         """
         radius: The radius of your sphere
         density_factor: Points per unit of surface area
@@ -57,7 +57,7 @@ def write_polymer_data(filename, num_bead,per_chain=20, bond_length=0.3,jr=1.5):
         # Atoms: ID, molecule-ID, type, x, y, z
         # Golden angle in radians
         phi = np.pi * (3. - np.sqrt(5.))
-        cx,cy,cz=padding+1,padding+1,z+0.5  
+        cx,cy,cz=padding+1,padding+1,z+1.5
         for n in range(2):
 
             for i in range(n_points):
@@ -102,5 +102,5 @@ def write_polymer_data(filename, num_bead,per_chain=20, bond_length=0.3,jr=1.5):
         
 
 if __name__ == "__main__":
-    write_polymer_data("polymer_chain_multiple_3_jr1.5_2.data", num_bead=5268,per_chain=10,jr=1.5)
-    print("File 'polymer_chain_multiple_3_jr1.5_2.data' has been created.")
+    write_polymer_data("polymer_chain_multiple_3_jr1_2.data", num_bead=5180,per_chain=10,jr=1)
+    print("File 'polymer_chain_multiple_3_jr1_2.data' has been created.")

@@ -12,8 +12,8 @@ variable   gamma     equal  4.5
 
 # Simulation time 
 #***********************************************
-variable   equilibsteps  equal  1000
-variable   mainsteps     equal  2000
+variable   equilibsteps  equal  10000
+variable   mainsteps     equal  50000
 
 # Temperature setup: T* = T/T_0; T_0 = (25+273.15) K
 #**********************************************************
@@ -23,7 +23,9 @@ variable   T_e           equal  3
 # Interaction strength (a_pp = 25T*)
 #**********************************************************
 variable   a25  equal  25*${adjustedTemp}
-variable   a30  equal  30*${adjustedTemp}
+variable   a60  equal  60*${adjustedTemp}
+variable   a25e equal  ${T_e}*${a25}
+
 
 # Simulation setup
 #***********************************************
@@ -39,7 +41,7 @@ comm_modify     cutoff 4.0 vel yes
 
 # Define Polymer chain from DataFile
 #***********************************************
-read_data   ../polymer_chain_multiple_3.data
+read_data   ../../datafiles/polymer_chain_multiple_3.data
 
 
 # Define groups for various type of atoms
@@ -60,7 +62,7 @@ print      "C_A: ${c_A} C_B: ${c_B}"
 # Interaction parameter setting
 #***********************************************
 mass        *  1.0
-pair_coeff  *  *    ${a25*T_e}  ${gamma}  ${rc_dpd}
+pair_coeff  *  *    ${a25e}  ${gamma}  ${rc_dpd}
 bond_coeff      1  64.0 0.5 
 angle_coeff     *  4.0 
 
@@ -93,7 +95,7 @@ run  ${equilibsteps}
 
 # Interaction parameter setting for Quenching
 #***********************************************
-pair_coeff   1  2    ${a30}  ${gamma}  ${rc_dpd}
+pair_coeff   1  2    ${a60}  ${gamma}  ${rc_dpd}
 
 # Thermo output after the Equilibration is done
 #***********************************************
