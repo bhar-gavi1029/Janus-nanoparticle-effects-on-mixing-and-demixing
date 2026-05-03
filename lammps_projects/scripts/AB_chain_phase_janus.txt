@@ -24,7 +24,7 @@ variable   T_e           equal  3*${adjustedTemp}
 # Interaction strength (a_pp = 25T*)(a_jp=10T*)
 #**********************************************************
 variable   a25  equal  25*${adjustedTemp}
-variable   a30  equal  60*${adjustedTemp}
+variable   a30  equal  30*${adjustedTemp}
 variable   a10  equal  10*${adjustedTemp}
 variable   a20  equal  20*${adjustedTemp}
 variable   a25e equal  ${T_e}*${a25}
