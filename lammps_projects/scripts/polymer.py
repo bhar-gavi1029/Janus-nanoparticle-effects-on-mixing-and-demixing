@@ -1,23 +1,13 @@
 import numpy as np
-def write_polymer_data(filename, num_monomers,per_chain=20, bond_length=0.5,jr=1.5):
-    def calculate_n_for_radius(radius, density_factor=100):
-        """
-        radius: The radius of your sphere
-        density_factor: Points per unit of surface area
-        """
-        surface_area = 4 * np.pi * (radius**2)
-        return int(surface_area * density_factor)
-
-
-    n_points = calculate_n_for_radius(jr)
+def write_polymer_data(filename, num_monomers,per_chain=20, bond_length=0.5):
     with open(filename, 'w') as f:
         # Header
         f.write("LAMMPS Polymer Data File\n\n")
-        f.write(f"{num_monomers+n_points} atoms\n")
+        f.write(f"{num_monomers} atoms\n")
         f.write(f"{(per_chain-1)*num_monomers//per_chain} bonds\n")
         f.write(f"{(per_chain-2)*num_monomers//per_chain} angles\n\n")
         
-        f.write("4 atom types\n")
+        f.write("2 atom types\n")
         f.write("1 bond types\n")
         f.write("1 angle types\n\n")
         
@@ -51,24 +41,6 @@ def write_polymer_data(filename, num_monomers,per_chain=20, bond_length=0.5,jr=1
             
             b+=1
               
-        #janus particle
-        """Generates evenly distributed points on a sphere."""
-        # Atoms: ID, molecule-ID, type, x, y, z
-        
-        cx,cy,cz=2,2,2
-        phi = np.pi * (3. - np.sqrt(5.))  # Golden angle in radians
-
-        for i in range(n_points):
-            y =1 - (i / float(n_points - 1)) * 2  # y goes from -1 to 1
-            radius = np.sqrt(1 - y * y)  # radius at y
-
-            theta = phi * i  # golden angle increment
-
-            x = np.cos(theta) * radius
-            z = np.sin(theta) * radius
-            f.write(f"{b} 1 {3 if theta%(2*np.pi)<np.pi else 4} {jr*(x+cx):.4f} {jr*(y+cy):4f} {jr*(z+cz):4f}\n")
-            b+=1       
-
             
         # Bonds: ID, type, atom1, atom2
         f.write("\nBonds\n\n")
@@ -98,5 +70,5 @@ def write_polymer_data(filename, num_monomers,per_chain=20, bond_length=0.5,jr=1
         
 
 if __name__ == "__main__":
-    write_polymer_data("polymer_chain_multiple_3_jr3.data", num_monomers=5180,per_chain=10,jr=3)
-    print("File 'polymer_chain_multiple_3_jr3.data' has been created.")
+    write_polymer_data("polymer_chain_multiple_3.data", num_monomers=5180,per_chain=10)
+    print("File 'polymer_chain_multiple_3.data' has been created.")
