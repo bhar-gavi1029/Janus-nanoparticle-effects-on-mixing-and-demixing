@@ -2,7 +2,7 @@
 """Generates evenly distributed points on a sphere."""
 # Atoms: ID, molecule-ID, type, x, y, z
 import numpy as np
-def calculate_n_for_radius(radius, density_factor=4):
+def calculate_n_for_radius(radius, density_factor=10):
         """
         radius: The radius of your sphere
         density_factor: Points per unit of surface area
@@ -10,7 +10,7 @@ def calculate_n_for_radius(radius, density_factor=4):
         surface_area = 4 * np.pi * (radius**2)
         return int(surface_area * density_factor)
 if __name__ == "__main__":
-    n_points=calculate_n_for_radius(1.5)
+    n_points=calculate_n_for_radius(1)
     b=1
     jr=3
     phi = np.pi * (3. - np.sqrt(5.))  # Golden angle in radians

@@ -12,8 +12,8 @@ variable   gamma     equal  4.5
 
 # Simulation time 
 #***********************************************
-variable   equilibsteps  equal  1000
-variable   mainsteps     equal  2000
+variable   equilibsteps  equal  10000
+variable   mainsteps     equal  50000
 
 # Temperature setup: T* = T/T_0; T_0 = (25+273.15) K
 #**********************************************************
@@ -38,7 +38,7 @@ boundary        p  p  p
 pair_style      dpd  ${adjustedTemp}  ${rc_dpd}  ${rseeddpd}
 bond_style      harmonic
 angle_style     cosine
-special_bonds   lj 1.0 1.0 1.0
+special_bonds   lj 0.0 1.0 1.0
 comm_modify     cutoff 4.0 vel yes
 
 

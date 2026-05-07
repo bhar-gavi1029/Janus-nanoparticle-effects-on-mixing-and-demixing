@@ -35,7 +35,7 @@ boundary        p  p  p
 pair_style      dpd  ${adjustedTemp}  ${rc_dpd}  ${rseeddpd}
 bond_style      harmonic
 angle_style     cosine
-special_bonds   lj 1.0 1.0 1.0
+special_bonds   lj 0.0 1.0 1.0
 comm_modify     cutoff 4.0 vel yes
 
 

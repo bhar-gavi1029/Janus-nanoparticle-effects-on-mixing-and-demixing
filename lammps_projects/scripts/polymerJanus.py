@@ -1,5 +1,5 @@
 import numpy as np
-def write_polymer_data(filename, num_bead,per_chain=20, bond_length=0.3,jr=1):
+def write_polymer_data(filename, num_bead,per_chain=20, bond_length=0.5,jr=1):
     
 
     def calculate_n_for_radius(radius, density_factor=10):
@@ -15,8 +15,10 @@ def write_polymer_data(filename, num_bead,per_chain=20, bond_length=0.3,jr=1):
 
     with open(filename, 'w') as f:
         # Header
+        per_type=num_monomers//(2*per_chain)
+        num_monomers=2*per_chain*per_type
         f.write("LAMMPS Polymer Data File\n\n")
-        f.write(f"{num_bead} atoms\n")
+        f.write(f"{num_monomers+2*n_points} atoms\n")
         f.write(f"{(per_chain-1)*num_monomers//per_chain} bonds\n")
         f.write(f"{(per_chain-2)*num_monomers//per_chain} angles\n\n")
         
@@ -25,7 +27,7 @@ def write_polymer_data(filename, num_bead,per_chain=20, bond_length=0.3,jr=1):
         f.write("1 angle types\n\n")
         
         # Simulation Box (centered with padding)
-        per_type=num_monomers//(2*per_chain)
+        
         padding = 1.5
         max_len = 12.0 -padding
         f.write(f"0.0 {max_len+padding} xlo xhi\n")
@@ -34,9 +36,9 @@ def write_polymer_data(filename, num_bead,per_chain=20, bond_length=0.3,jr=1):
         
         # Atoms: ID, molecule-ID, type, x, y, z
         f.write("Atoms\n\n")
-        b,dx,dy,i=1,1,1,0 #d is direction 1 right -1 for left
+        b,dx,dy,i,t=1,1,1,0,1 #d is direction 1 right -1 for left
         x,y,z=padding,padding,padding
-        while(b<=num_monomers):
+        while(b<=num_monomers ):
             t=((b-1)//per_chain)+1 
             x+=(dx)*bond_length
 
@@ -57,7 +59,7 @@ def write_polymer_data(filename, num_bead,per_chain=20, bond_length=0.3,jr=1):
         # Atoms: ID, molecule-ID, type, x, y, z
         # Golden angle in radians
         phi = np.pi * (3. - np.sqrt(5.))
-        cx,cy,cz=padding+1,padding+1,z+1.5
+        cx,cy,cz=padding+2,padding+2,z+1.5
         for n in range(2):
 
             for i in range(n_points):
@@ -70,7 +72,7 @@ def write_polymer_data(filename, num_bead,per_chain=20, bond_length=0.3,jr=1):
                 z = np.sin(theta) * radius
                 f.write(f"{b} {t+1} {3 if theta%(2*np.pi)<np.pi else 4} {jr*(x+cx):.4f} {jr*(y+cy):4f} {jr*(z+cz):4f}\n")
                 b+=1    
-            cy+=2*jr+bond_length  
+            cy+=2*(jr+bond_length)  
             t+=1 
 
             
